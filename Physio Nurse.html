@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="utf-8"><title>Physio Nurse</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#fff0f6;--card:#fff;--pk:#ec4899;--pk2:#f9a8d4;--tx:#4a1d3a;--mut:#9d6b86;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#2a1020;--card:#3b1a2e;--tx:#ffe4f1;--mut:#e9a8c8}}
+:root[data-theme=dark]{--bg:#2a1020;--card:#3b1a2e;--tx:#ffe4f1;--mut:#e9a8c8}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,"Sarabun",sans-serif;font-size:18px}
+main{max-width:760px;margin:0 auto;padding:16px}
+h1{color:var(--pk);margin:8px 0;font-size:26px}h2{margin:6px 0;font-size:21px}
+.card{background:var(--card);border-radius:22px;padding:18px;margin:12px 0;box-shadow:0 4px 14px #ec489922}
+button,input{font:inherit}
+.btn{background:var(--pk);color:#fff;border:0;border-radius:999px;padding:12px 24px;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--pk);border:2px solid var(--pk2)}.btn:disabled{opacity:.45}
+input{width:100%;padding:12px 16px;border-radius:14px;border:2px solid var(--pk2);background:var(--card);color:var(--tx)}
+.faces{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.face{border:3px solid transparent;background:var(--bg);border-radius:18px;padding:8px;text-align:center;cursor:pointer;font-size:15px}
+.face.sel{border-color:var(--pk)}.face svg{width:64px;height:64px}
+.mut{color:var(--mut);font-size:15px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.vid{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:4/3;max-height:52vh}
+video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}video.noflip{transform:none}
+.big{font-size:56px;color:var(--pk);text-align:center;font-weight:700}
+.sc{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.sc button{padding:14px 0;border-radius:14px;border:2px solid var(--pk2);background:var(--card);color:var(--tx);font-size:20px}.sc button.sel{background:var(--pk);color:#fff}
+.bar{height:10px;background:var(--pk2);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--pk);width:0}
+table{width:100%;border-collapse:collapse;font-size:15px}td,th{padding:6px;border-bottom:1px solid var(--pk2);text-align:left}
+.warn{background:#fde68a;color:#78350f;border-radius:14px;padding:10px 14px;font-size:15px}
+</style></head><body><main id="app"></main>
+<script>
+const L=[
+{n:"ไม่มีอาการปวด",r:"0",c:"#fff",f:0,p:[
+["เอียงคอซ้าย-ขวาช้าๆ สลับกัน",30,"↔️","ช่วยคลายกล้ามเนื้อด้านข้างคอที่ตึงจากการก้มนาน"],
+["ก้มหน้าเก็บคางชิดหน้าอกช้าๆ ค้างไว้",30,"🙇","ยืดกล้ามเนื้อต้นคอด้านหลัง"],
+["เงยหน้าขึ้นช้าๆ ค้างไว้",30,"🙆","ปรับสมดุลหลังก้ม ลดการค้างท่าเดิม"]]},
+{n:"ปวดเล็กน้อย",r:"1-3",c:"#4ade80",f:1,p:[
+["เหยียดแขนไปฝั่งตรงข้าม ใช้มืออีกข้างดึงเข้าหาตัว (15 วิ แล้วสลับข้างอีก 15 วิ)",30,"🤗","ยืดกล้ามเนื้อบ่าและหัวไหล่ด้านหลัง"],
+["ยักไหล่ขึ้นสลับผ่อน",30,"🤷","กระตุ้นการไหลเวียนเลือดและลดความตึงของไหล่"],
+["เอียงคอซ้าย ใช้มือข้างเดียวกันช่วยดึงศีรษะ (15 วิ แล้วสลับข้างอีก 15 วิ)",30,"🧘","ยืดกล้ามเนื้อบ่าด้านข้างคอ (Upper trapezius)"]]},
+{n:"ปวดปานกลาง",r:"4-6",c:"#facc15",f:2,p:[
+["ยกไหล่ขึ้นแล้วหมุนไปข้างหลัง 10 ครั้ง จากนั้นหมุนไปข้างหน้า 10 ครั้ง",40,"🔄","เพิ่มการเคลื่อนไหวของหัวไหล่ คลายกล้ามเนื้อรอบสะบัก"],
+["ประสานมือไว้ด้านหลัง ดึงแขนไปด้านหลัง ค้างไว้",30,"🙌","ยืดกล้ามเนื้อหน้าอกและไหล่ด้านหน้า แก้ท่าไหล่ห่อ"],
+["ประสานมือที่ท้ายทอย กางศอกเข้า-ออกสลับกัน",30,"💆","ขยับสะบักและคลายกล้ามเนื้อต้นคอ"]]},
+{n:"ปวดมาก",r:"7-9",c:"#fb923c",f:3,p:[
+["ประสานมือเหยียดแขนเหนือศีรษะ เงยศีรษะขึ้น ค้างไว้",30,"🙆‍♀️","ยืดลำตัวส่วนบนและกล้ามเนื้อไหล่-คอ"],
+["ประสานมือไว้ด้านหลัง เอียงศีรษะไปซ้าย 15 วิ แล้วไปขวา 15 วิ",30,"🙇‍♀️","ยืดกล้ามเนื้อคอด้านข้างร่วมกับหน้าอก"],
+["ประสานมือเหยียดแขนตึงเหนือศีรษะ เอียงตัวขวา 15 วิ แล้วซ้าย 15 วิ",30,"🤸","ยืดกล้ามเนื้อด้านข้างลำตัวและไหล่"]]},
+{n:"ปวดรุนแรง",r:"10",c:"#ef4444",f:4,p:[
+["พนมมือไว้ด้านหลัง ค้างไว้",30,"🙏","ยืดข้อมือ หน้าอก และหัวไหล่ด้านหน้า"],
+["ยกแขนขวาขึ้น พับศอก ใช้มือซ้ายช่วยกดศอก 15 วิ แล้วทำอีกข้าง 15 วิ",30,"💪","ยืดกล้ามเนื้อต้นแขนด้านหลังและไหล่"],
+["พับแขนสองข้าง ปลายนิ้วแตะหัวไหล่ หมุนไหล่ไปหน้า 15 ครั้ง แล้วหมุนกลับหลัง 15 ครั้ง",40,"🔃","เพิ่มช่วงการเคลื่อนไหวของข้อไหล่และสะบัก"]]}];
+const SRC="แหล่งอ้างอิง: โรงพยาบาลสมิติเวช (ข้อมูลออฟฟิศซินโดรม/ปวดคอ บ่า ไหล่), Mayo Clinic และ Cleveland Clinic (neck & shoulder stretches) — โปรดตรวจสอบและอ้างอิงลิงก์ต้นฉบับก่อนนำไปใช้จริง หากปวดรุนแรง ชา หรืออาการแย่ลง ควรพบแพทย์";
+const W=[[12,13],[17,18]];
+const $=s=>document.querySelector(s),app=$("#app");
+let S={uid:"local",email:"",admin:false,db:null,as:null,level:null,view:"login",log:{sessions:[]},vids:[],stream:null,flip:true,filter:0};
+const FIL=["none","brightness(1.1) saturate(1.2) contrast(.95) blur(.4px)","brightness(1.15) sepia(.25) saturate(1.4) hue-rotate(-12deg)"];
+const FN=["ไม่มีฟิลเตอร์","นุ่มใส","ชมพูหวาน"];
+function face(i,c){const m=["M20 40Q32 54 44 40","M22 40Q32 47 42 40","M23 43H41","M22 46Q32 38 42 46","M22 48Q32 36 42 48"][i];
+return `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="29" fill="${c}" stroke="#444" stroke-width="3"/><circle cx="23" cy="26" r="3" fill="#444"/><circle cx="41" cy="26" r="3" fill="#444"/>${i==3?'<path d="M17 19L28 22M47 19L36 22" stroke="#444" stroke-width="3"/>':''}<path d="${m}" fill="${i==0?'#fff':'none'}" stroke="#444" stroke-width="3" stroke-linecap="round"/>${i==4?'<path d="M23 33v8M41 33v8" stroke="#38bdf8" stroke-width="3"/>':''}</svg>`}
+const inWin=()=>{const h=new Date().getHours();return W.some(w=>h>=w[0]&&h<w[1])};
+const days=l=>new Set((l.sessions||[]).map(s=>s.ts.slice(0,10))).size;
+const fmt=t=>new Date(t).toLocaleString("th-TH");
+async function save(){try{localStorage.setItem("pn_log",JSON.stringify(S.log))}catch(e){}
+if(S.db)try{await S.db.doc("logs/"+S.uid).set({email:S.email,sessions:S.log.sessions})}catch(e){console.error(e)}}
+async function init(){
+try{const u=await claude.use("user");if(u){S.uid=await u.id();S.admin=u.isOwner()||u.canEdit()}}catch(e){}
+try{S.db=await claude.use("db")}catch(e){}try{S.as=await claude.use("assets")}catch(e){}
+try{const e=localStorage.getItem("pn_email");if(e)S.email=e}catch(e){}
+if(S.db)try{const d=await S.db.doc("logs/"+S.uid).get();if(d.exists){const x=d.data();S.log.sessions=x.sessions||[];S.email=S.email||x.email||""}}catch(e){}
+if(!S.log.sessions.length)try{S.log=JSON.parse(localStorage.getItem("pn_log"))||S.log}catch(e){}
+S.view=S.email?"home":"login";render()}
+function nav(v){stopCam();S.view=v;render()}
+function render(){const v=S.view;
+const top=`<h1>🌸 Physio Nurse</h1>`;
+if(v=="login")app.innerHTML=top+`<div class="card"><h2>ลงชื่อเข้าใช้</h2><p class="mut">ลดอาการปวดคอ บ่า ไหล่ สำหรับนักศึกษาพยาบาลชั้นปีที่ 1 ลงชื่อด้วยอีเมลครั้งเดียว ระบบจะจำไว้ให้กลับมาทำได้ทุกวัน</p><input id="em" type="email" placeholder="อีเมลของคุณ"><p></p><button class="btn" onclick="login()">เข้าสู่ระบบ</button></div>`;
+if(v=="home"){const d=days(S.log);
+app.innerHTML=top+`<div class="row"><span class="mut">${S.email}</span><button class="btn alt" onclick="logout()">ออก</button>${S.admin?'<button class="btn alt" onclick="admin()">👩‍⚕️ Admin</button>':''}</div>
+<div class="card"><h2>ความก้าวหน้า: ${d} / 4 วัน</h2><div class="bar"><i style="width:${Math.min(100,d*25)}%"></i></div>
+<p class="mut">ทำให้ต่อเนื่อง 3-4 วัน วันละ 2 รอบ: 12:00-13:00 น. และ 17:00-18:00 น.</p>${inWin()?'':'<div class="warn">ตอนนี้ยังไม่อยู่ในช่วงเวลาทำกิจกรรม กลับมาใหม่ช่วง 12:00-13:00 หรือ 17:00-18:00 น. นะคะ</div>'}</div>
+<div class="card"><h2>ข้อมูลอาการปวดคอ บ่า ไหล่</h2><p>การก้มคอเล่นมือถือหรืออ่านหนังสือนานๆ ทำให้กล้ามเนื้อคอ บ่า และไหล่เกร็งตัว เกิดอาการปวดเมื่อยหรือที่เรียกว่าออฟฟิศซินโดรมได้ การยืดเหยียดเบาๆ สม่ำเสมอและพักสายตา/เปลี่ยนท่าทุก 30-45 นาที ช่วยลดอาการได้</p><p class="mut">${SRC}</p></div>
+<div class="card"><h2>เลือกระดับความปวดของคุณตอนนี้</h2><div class="faces">${L.map((l,i)=>`<div class="face ${S.level===i?'sel':''}" onclick="S.level=${i};render()">${face(l.f,l.c)}<br><b>ระดับ ${l.r}</b><br>${l.n}</div>`).join("")}</div><p></p>
+<button class="btn" ${S.level===null||(!inWin()&&!S.admin)?'disabled':''} onclick="nav('act')">เริ่มกิจกรรม</button></div>`}
+if(v=="act")actView();
+if(v=="done")doneView();
+if(v=="admin")app.innerHTML=top+`<button class="btn alt" onclick="nav('home')">← กลับ</button><div class="card" id="ad">กำลังโหลด...</div>`}
+function login(){const e=$("#em").value.trim();if(!/^\S+@\S+\.\S+$/.test(e))return alert("กรุณากรอกอีเมลให้ถูกต้อง");S.email=e;try{localStorage.setItem("pn_email",e)}catch(x){}save();nav("home")}
+function logout(){S.email="";try{localStorage.removeItem("pn_email")}catch(e){}nav("login")}
+let P=0,T=null,rec=null,chunks=[];
+function actView(){P=0;S.vids=[];const l=L[S.level];
+app.innerHTML=`<h1>🌸 ระดับ ${l.r} · ${l.n}</h1><div class="card"><div class="vid"><video id="v" autoplay muted playsinline></video></div>
+<div class="row" style="margin-top:8px"><button class="btn alt" onclick="flip()">🔄 กลับด้านกล้อง</button><button class="btn alt" onclick="S.filter=(S.filter+1)%3;ap()">✨ <span id="fn">${FN[S.filter]}</span></button><button class="btn alt" onclick="cam(true)">📷 เปิดกล้อง</button></div></div>
+<div class="card" id="pose"></div>`;cam();pose()}
+async function cam(force){stopCam();try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});$("#v").srcObject=S.stream;ap()}catch(e){if(force)alert("เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้องใน Safari")}}
+function stopCam(){clearInterval(T);try{if(rec&&rec.state!="inactive")rec.stop()}catch(e){}if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
+function ap(){const v=$("#v");if(v){v.style.filter=FIL[S.filter];v.className=S.flip?"":"noflip"}const f=$("#fn");if(f)f.textContent=FN[S.filter]}
+function flip(){S.flip=!S.flip;ap()}
+function pose(){const l=L[S.level],p=l.p[P];$("#pose").innerHTML=`<div class="mut">ท่าที่ ${P+1} / 3</div><h2>${p[2]} ${p[0]}</h2><p>ประโยชน์: ${p[3]}</p><div class="big" id="t">${p[1]}</div><div class="row"><button class="btn" id="go" onclick="run()">▶ เริ่มท่านี้ (บันทึกวิดีโอ)</button></div>`}
+function run(){const p=L[S.level].p[P];let s=p[1];$("#go").disabled=true;chunks=[];rec=null;
+if(S.stream&&window.MediaRecorder)try{rec=new MediaRecorder(S.stream);rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start()}catch(e){rec=null}
+T=setInterval(async()=>{s--;$("#t").textContent=s;if(s<=0){clearInterval(T);await endPose()}},1000)}
+async function endPose(){let id="no-video";
+if(rec&&rec.state!="inactive"){await new Promise(r=>{rec.onstop=r;rec.stop()});
+const b=new Blob(chunks,{type:rec.mimeType||"video/mp4"});
+if(S.as&&b.size)try{id=(await S.as.upload(b)).id}catch(e){id="upload-failed"}}
+S.vids.push(id);P++;if(P>=3){stopCam();nav("done")}else pose()}
+let post=null;
+function doneView(){post=null;app.innerHTML=`<h1>🌸 ประเมินหลังทำกิจกรรม</h1><div class="card"><h2>ตอนนี้ปวดระดับเท่าไหร่ (0-10)</h2><div class="sc">${[...Array(11).keys()].map(i=>`<button onclick="pick(${i},this)">${i}</button>`).join("")}</div><p class="mut">0 = ไม่ปวดเลย · 10 = ปวดรุนแรงที่สุด</p><button class="btn" id="sv" disabled onclick="fin()">บันทึก</button></div>`}
+function pick(i,b){post=i;document.querySelectorAll(".sc button").forEach(x=>x.className="");b.className="sel";$("#sv").disabled=false}
+async function fin(){const ts=new Date().toISOString();S.log.sessions.push({ts,level:S.level,post,vids:S.vids});await save();
+app.innerHTML=`<h1>🌸 Physio Nurse</h1><div class="card" style="text-align:center"><div style="font-size:64px">🎉</div><h2>ทำกิจกรรมเสร็จสิ้น</h2><p>บันทึกเวลา: ${fmt(ts)}</p><p>ปวดหลังทำ: ${post}/10 · ทำแล้ว ${days(S.log)} วัน</p><button class="btn" onclick="nav('home')">กลับหน้าหลัก</button></div>`}
+async function admin(){nav("admin");const el=$("#ad");if(!S.db)return el.textContent="ไม่พบฐานข้อมูล";
+try{const q=await S.db.collection("logs").get();const ds=q.docs?q.docs:q.docChanges().map(c=>c.doc);let h="<h2>บันทึกของนักศึกษา</h2>";
+ds.forEach(d=>{const x=d.data()||{};h+=`<h3>${x.email||"-"} (${days(x)} วัน)</h3><table><tr><th>เวลา</th><th>ระดับ</th><th>หลังทำ</th><th>วิดีโอ</th></tr>${(x.sessions||[]).map(s=>`<tr><td>${fmt(s.ts)}</td><td>${L[s.level].r}</td><td>${s.post}</td><td>${(s.vids||[]).map((v,i)=>v.length==32?`<a href="/_blob/${v}" target="_blank">ท่า${i+1}</a>`:'-').join(" ")}</td></tr>`).join("")}</table>`});
+el.innerHTML=h}catch(e){el.textContent="โหลดไม่ได้ (เฉพาะ admin): "+(e.code||e.message)}}
+init();
+</script></body></html>
